@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  vaultwarden:
+    image: vaultwarden/server:1.27.0
+    container_name: vaultwarden
+    restart: always
+    env_file:
+      - .env
+    environment:
+      WEBSOCKET_ENABLED: "true" # Enable WebSocket notifications.
+    volumes:
+      - ./vw-data:/data
+      - .
+
+  caddy:
+    container_name: caddy
+    restart: always
+    build:
+      dockerfile: ./Dockerfile
+    ports:
+      - 8080:80
+      - 8443:443
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy-config:/config
+      - ./caddy-data:/data
+    env_file:
+      - .env
+    environment:
+      DOMAIN: ${DOMAIN}
+      EMAIL: ${EMAIL}
+      DUCKDNS_TOKEN: ${DUCKDNS_TOKEN}
+      LOG_FILE: "/data/access.log"
